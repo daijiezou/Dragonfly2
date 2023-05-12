@@ -120,6 +120,10 @@ func initDaemonDfpath(cfg *config.DaemonOption) (dfpath.Dfpath, error) {
 		options = append(options, dfpath.WithDownloadUnixSocketPath(cfg.Download.DownloadGRPC.UnixListen.Socket))
 	}
 
+	if cfg.DirMode > 0 {
+		options = append(options, dfpath.WithDirMode(cfg.DirMode))
+	}
+
 	dataDir := dfpath.DefaultDataDir
 	if cfg.DataDir != "" {
 		dataDir = cfg.DataDir

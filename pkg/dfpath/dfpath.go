@@ -50,6 +50,7 @@ type dfpath struct {
 	daemonSockPath string
 	daemonLockPath string
 	dfgetLockPath  string
+	dirMode        fs.FileMode
 }
 
 // Cache of the dfpath.
@@ -104,6 +105,13 @@ func WithDownloadUnixSocketPath(path string) Option {
 	}
 }
 
+// WithDirMode set default directory mode.
+func WithDirMode(mode uint32) Option {
+	return func(d *dfpath) {
+		d.dirMode = fs.FileMode(mode)
+	}
+}
+
 // New returns a new dfpath interface.
 func New(options ...Option) (Dfpath, error) {
 	cache.Do(func() {
@@ -113,6 +121,7 @@ func New(options ...Option) (Dfpath, error) {
 			pluginDir:      DefaultPluginDir,
 			cacheDir:       DefaultCacheDir,
 			daemonSockPath: DefaultDownloadUnixSocketPath,
+			dirMode:        DefaultDirMode,
 		}
 
 		for _, opt := range options {
@@ -124,33 +133,33 @@ func New(options ...Option) (Dfpath, error) {
 		d.dfgetLockPath = filepath.Join(d.workHome, "dfget.lock")
 
 		// Create workhome directory.
-		if err := os.MkdirAll(d.workHome, fs.FileMode(0755)); err != nil {
+		if err := os.MkdirAll(d.workHome, d.dirMode); err != nil {
 			cache.err = multierror.Append(cache.err, err)
 		}
 
 		// Create log directory.
-		if err := os.MkdirAll(d.logDir, fs.FileMode(0755)); err != nil {
+		if err := os.MkdirAll(d.logDir, d.dirMode); err != nil {
 			cache.err = multierror.Append(cache.err, err)
 		}
 
 		// Create plugin directory.
-		if err := os.MkdirAll(d.pluginDir, fs.FileMode(0755)); err != nil {
+		if err := os.MkdirAll(d.pluginDir, d.dirMode); err != nil {
 			cache.err = multierror.Append(cache.err, err)
 		}
 
 		// Create unix socket directory.
-		if err := os.MkdirAll(path.Dir(d.daemonSockPath), fs.FileMode(0755)); err != nil {
+		if err := os.MkdirAll(path.Dir(d.daemonSockPath), d.dirMode); err != nil {
 			cache.err = multierror.Append(cache.err, err)
 		}
 
 		// Create cache directory.
-		if err := os.MkdirAll(d.cacheDir, fs.FileMode(0755)); err != nil {
+		if err := os.MkdirAll(d.cacheDir, d.dirMode); err != nil {
 			cache.err = multierror.Append(cache.err, err)
 		}
 
 		// Create data directory.
 		if d.dataDir != "" {
-			if err := os.MkdirAll(d.dataDir, fs.FileMode(0755)); err != nil {
+			if err := os.MkdirAll(d.dataDir, d.dirMode); err != nil {
 				cache.err = multierror.Append(cache.err, err)
 			}
 		}

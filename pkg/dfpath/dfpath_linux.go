@@ -18,6 +18,8 @@
 
 package dfpath
 
+import "io/fs"
+
 var DefaultWorkHome = "/usr/local/dragonfly"
 var DefaultCacheDir = "/var/cache/dragonfly"
 var DefaultConfigDir = "/etc/dragonfly"
@@ -25,3 +27,4 @@ var DefaultLogDir = "/var/log/dragonfly"
 var DefaultDataDir = "/var/lib/dragonfly"
 var DefaultPluginDir = "/usr/local/dragonfly/plugins"
 var DefaultDownloadUnixSocketPath = "/var/run/dfdaemon.sock"
+var DefaultDirMode = fs.FileMode(0755)
