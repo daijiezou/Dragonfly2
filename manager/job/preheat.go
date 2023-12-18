@@ -182,7 +182,7 @@ func (p *preheat) getImageLayers(ctx context.Context, args types.PreheatArgs) ([
 			Timeout: p.registryTimeout,
 			Transport: &http.Transport{
 				DialContext:     nethttp.NewSafeDialer().DialContext,
-				TLSClientConfig: &tls.Config{RootCAs: p.rootCAs},
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 			},
 		}),
 		withBasicAuth(args.Username, args.Password),
