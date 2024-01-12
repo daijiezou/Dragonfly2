@@ -20,7 +20,10 @@ package resource
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"strings"
 	"time"
 
@@ -113,12 +116,26 @@ func (s *seedPeer) TriggerTask(ctx context.Context, rg *http.Range, task *Task) 
 	if rg != nil {
 		urlMeta.Range = rg.URLMetaString()
 	}
+	if len(s.Client().Addrs()[0]) < 1 {
+		return nil, nil, errors.New("seed peer address is empty")
 
-	stream, err := s.client.ObtainSeeds(ctx, &cdnsystemv1.SeedRequest{
+	}
+	conn, err := grpc.DialContext(ctx, s.Client().Addrs()[0], grpc.WithTransportCredentials(insecure.NewCredentials()))
+	defer conn.Close()
+	if err != nil {
+		return nil, nil, err
+	}
+	client := cdnsystemv1.NewSeederClient(conn)
+	stream, err := client.ObtainSeeds(ctx, &cdnsystemv1.SeedRequest{
 		TaskId:  task.ID,
 		Url:     task.URL,
 		UrlMeta: urlMeta,
 	})
+	//stream, err := s.client.ObtainSeeds(ctx, &cdnsystemv1.SeedRequest{
+	//	TaskId:  task.ID,
+	//	Url:     task.URL,
+	//	UrlMeta: urlMeta,
+	//})
 	if err != nil {
 		return nil, nil, err
 	}
