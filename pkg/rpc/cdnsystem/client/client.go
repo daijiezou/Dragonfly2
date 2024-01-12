@@ -20,6 +20,7 @@ package client
 
 import (
 	"context"
+	"google.golang.org/grpc/keepalive"
 	"time"
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -114,6 +115,11 @@ func GetClient(ctx context.Context, dynconfig config.DynconfigInterface, opts ..
 				grpc_zap.StreamClientInterceptor(logger.GrpcLogger.Desugar()),
 				rpc.RefresherStreamClientInterceptor(dynconfig),
 			)),
+			grpc.WithKeepaliveParams(keepalive.ClientParameters{
+				Time:                15 * time.Second, // client ping server if no activity for this long
+				Timeout:             20 * time.Second,
+				PermitWithoutStream: true,
+			}),
 		}, opts...)...,
 	)
 	if err != nil {
